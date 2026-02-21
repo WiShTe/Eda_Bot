@@ -12,5 +12,5 @@ async def cmd_start(message: Message) -> None:
     """Обработка команды start"""
     await message.answer(
         "Привет, составим меню?",
-        reply_markup=main_menu,
+        reply_markup=main_menu(message.from_user.id),
     )
