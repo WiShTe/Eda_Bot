@@ -1,17 +1,16 @@
-from aiogram.types import (
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    KeyboardButton,
-    ReplyKeyboardMarkup,
-)
+from aiogram.types import KeyboardButton, ReplyKeyboardMarkup
 
-# Reply Keyboard старотового меню
-main_menu = ReplyKeyboardMarkup(
-    keyboard=[
-        [
-            KeyboardButton(text="Составить меню на неделю🍽"),
-            KeyboardButton(text="ℹ️ Help"),
-        ]
-    ],
-    resize_keyboard=True,
-)
+
+def main_menu(user_telegram_id: int):
+    kb_list = [
+        [KeyboardButton(text="➕ Добавить блюдо", callback_data="➕ Добавить блюдо")],
+        [KeyboardButton(text="ℹ️ Help", callback_data="ℹ️ Help")],
+
+    ]
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=kb_list,
+        resize_keyboard=True,
+        one_time_keyboard=True,
+        input_field_placeholder="Воспользуйтесь меню:"
+    )
+    return keyboard
