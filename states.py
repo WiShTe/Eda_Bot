@@ -6,3 +6,4 @@ class Add_meal(StatesGroup):
     inrdients = State()
     reciept = State()
     time_of_meal = State()
+    confirmation = State()

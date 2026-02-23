@@ -1,10 +1,11 @@
 from aiogram import F, Router
-from aiogram.filters import Command, CommandStart
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import Message
 from states import Add_meal
-
-
+from db.database import database
+from keyboards.confirmation import confirmation_kb
+from keyboards.main_menu import main_menu
 add_meal_router = Router()
 
 
@@ -38,14 +39,14 @@ async def process_meal_name(message: Message, state: FSMContext): #создаё�
 #Добавление ингридиентов  в бд по аналогии с именем(@add_meal_router.message(Add_meal.name)
 @add_meal_router.message(Add_meal.inrdients)
 async def process_meal_inrdents(message: Message, state: FSMContext):
-    inridient_name = message.text
+    ingredients = message.text
 
-    await state.update_data(inridient_name=inridient_name)
+    await state.update_data(ingredients=ingredients)
 
-    print(f"User {message.from_user.username}: {inridient_name}")
+    print(f"User {message.from_user.username}: {ingredients}")
 
     data = await state.get_data()
-    print(f"Data in state: {data}")
+    print(f"Data in state: {data['name']}")
 
     await state.set_state(Add_meal.reciept)
 
@@ -56,11 +57,11 @@ async def process_meal_inrdents(message: Message, state: FSMContext):
 #Добавление рецепта блюда в бд по аналогии с именем(@add_meal_router.message(Add_meal.name)
 @add_meal_router.message(Add_meal.reciept)
 async def process_meal_reciept(message: Message, state: FSMContext):
-    reciept = message.text
+    receipt = message.text
 
-    await state.update_data(reciept=reciept)
+    await state.update_data(receipt=receipt)
 
-    print(f"User {message.from_user.username}: {reciept}")
+    print(f"User {message.from_user.username}: {receipt}")
 
     data = await state.get_data()
     print(f"Data in state: {data}")
@@ -80,8 +81,24 @@ async def process_time_of_meal(message: Message, state: FSMContext):
     print(f"User {message.from_user.username}: {time_of_meal}")
 
     data = await state.get_data()
-    print(f"Data in state: {data}")
-
+    print(f"Data in state: {data["name"], data["ingredients"], data["receipt"], data["time_of_meal"]}")
     await message.answer(
-        F'Вы ввели {data}'
+        F'Добавить в базу данных: {data["name"], data["ingredients"], data["receipt"], data["time_of_meal"]}?',
+        reply_markup=confirmation_kb(message.from_user.id),
     )
+    await state.set_state(Add_meal.confirmation)
+
+
+@add_meal_router.message(Add_meal.confirmation)
+async def process_time_of_meal(message: Message, state: FSMContext):
+    confirmation = message.text
+    await state.update_data(confirmation=confirmation)
+    print(f"User {message.from_user.username}: {confirmation}")
+    data = await state.get_data()
+    if data['confirmation'] == "✅":
+        await database.add_meal(data)
+        await state.clear()
+        await message.answer('блюдо успешно добавленно в базу данных!', reply_markup=main_menu(message.from_user.id))
+    else:
+        await state.clear()
+        await message.answer('повторите ввод', reply_markup=main_menu(message.from_user.id))

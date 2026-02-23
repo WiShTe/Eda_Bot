@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 
 from handlers import all_routers
 
+from db.database import database
 
 BOT_TOKEN_ENV = "BOT_TOKEN"
 
@@ -33,7 +34,7 @@ async def main() -> None:
     # подключение всех роутеров (start_router,)
     for router in all_routers:
         dp.include_router(router)
-
+    await database.create_pool()
     await dp.start_polling(bot)
 
 
