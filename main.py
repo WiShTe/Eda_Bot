@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 
 from handlers import all_routers
 
-from db.database import database
+from database.database import database
 
 BOT_TOKEN_ENV = "BOT_TOKEN"
 

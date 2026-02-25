@@ -4,7 +4,7 @@ from aiogram.types import CallbackQuery, Message
 
 from keyboards.main_menu import main_menu
 
-from db.database import database
+from database.database import database
 
 start_router = Router()
 
@@ -21,8 +21,8 @@ async def cmd_start(message: Message) -> None:
 
     if existing_user:
         await message.answer(
-            f"👋 С возвращением, {first_name}, составим меню?\n"
-        )
+            f"👋 С возвращением, {first_name}, составим меню?\n",
+        reply_markup = main_menu(message.from_user.id))
     else:
         # Добавляем нового пользователя
         await database.add_user(user_id, username, first_name)

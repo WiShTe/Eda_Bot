@@ -3,7 +3,7 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from states import Add_meal
-from db.database import database
+from database.database import database
 from keyboards.confirmation import confirmation_kb
 from keyboards.main_menu import main_menu
 add_meal_router = Router()

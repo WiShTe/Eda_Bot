@@ -32,6 +32,7 @@ class Database:
                 telegram_id, username, first_name
             )
 
+
     async def add_meal(self, data: dict):
         """Добавляем блюдо в базу данных dishes"""
         try:
@@ -50,6 +51,23 @@ class Database:
         except Exception as e:
             print(f"❌ Ошибка при добавлении блюда: {e}")
             return False  # Ошибка
+
+    async def get_meal(self, meal_id: int):
+        """Получить блюдо из базы"""
+        async with self.pool.acquire() as conn:
+            meal = await conn.fetchrow(
+                "SELECT * FROM dishes WHERE id = $1",
+                 meal_id
+            )
+            return meal
+
+    async def get_max_meal_id(self):
+        """Получить максимальное id из таблицы dishes"""
+        async with self.pool.acquire() as conn:
+            id = await conn.fetchrow(
+                "SELECT MAX(id) FROM dishes"
+            )
+            return id
 
     async def get_user(self, telegram_id: int):
         """Получить пользователя из базы"""
