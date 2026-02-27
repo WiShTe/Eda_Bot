@@ -6,7 +6,9 @@ SpisokPokuopok = dict()
 sum = 0
 for product in products:
     name_of_product = product.split('-')[0].replace(" ", "")
+    print(name_of_product)
     weight_of_product = int(product.split('-')[1].replace("г", ''))
+    print(weight_of_product)
     print(name_of_product, weight_of_product)
     if name_of_product not in SpisokPokuopok:
         SpisokPokuopok[name_of_product] = weight_of_product
