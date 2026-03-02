@@ -1,11 +1,8 @@
-from calendar import weekday
-
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from database.database import database
-from states import Create_menu
 import random
 
 create_menu_router = Router()
@@ -30,6 +27,8 @@ async def create_menu(message: Message, ) -> None:
 @create_menu_router.message(F.text == "Составить меню")
 async def create_menu(message: Message, state: FSMContext) -> None:
     titles = ['🍳 Завтрак', '🍲 Обед', '🍽 Ужин']
+    shopping_list = {}
+    ingredients_raw = []  # список ингридиентов
     reply = "📅 **Меню на неделю:**\n\n"
     weekdays = ['понедельник', 'вторник',
                 'среда', 'четверг', 'пятница',
@@ -46,6 +45,41 @@ async def create_menu(message: Message, state: FSMContext) -> None:
             print(max_id)
             random_id = random.randint(1, int(max_id))
             data = await database.get_meal(table, random_id)
+            if data[2]:  # если ингредиенты есть
+                ingredients_raw.append(data[2])
             reply += f"    {title}: {data[1]}\n"
+        # --- Обработка ингредиентов ---
+    all_ingredients = ", ".join(ingredients_raw)  # объединяем все ингредиенты в одну строку
+    products = all_ingredients.split(", ")  # разбиваем на отдельные компоненты
 
+    for product in products:
+        product = product.strip()  # Убираем лишние пробелы
+
+        # Пропускаем пустые строки
+        if not product or '-' not in product:
+            continue
+
+        try:
+            parts = product.split('-')  # разделяем название и вес
+            if len(parts) != 2:  # защита от битых ингридиентов Суп-пюре - 500г
+                continue
+            name_of_product = parts[0].strip()  # убираем пробелы вокруг имени
+            weight_str = parts[1].strip().replace("г", '')  # Убираем 'г' и пробелы
+            weight_of_product = int(weight_str)
+            # Суммируем вес
+            if name_of_product not in shopping_list:  # если имя продукта нет в словаре
+                shopping_list[name_of_product] = weight_of_product  # создаем новую пару
+            else:
+                shopping_list[name_of_product] += weight_of_product  # иначе добавляем вес к существующей паре
+
+        except (ValueError, IndexError) as e:
+            print(
+                f"⚠️ Пропущен ингредиент: {product} (Ошибка: {e})")  # если вес не число или другая ошибка - пропускаем ингредиент
+            continue
+
+    # Формируем красивый список покупок
+    shopping_list_text = "\n🛒 **Список покупок:**\n\n"
+    for item, weight in sorted(shopping_list.items()):
+        shopping_list_text += f"{item} - {weight}г\n"
+    reply += shopping_list_text
     await message.answer(reply, parse_mode="Markdown")
