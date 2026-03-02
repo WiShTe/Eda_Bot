@@ -26,12 +26,10 @@ class Database:
             await conn.execute(
                 """
                 INSERT INTO users (telegram_id, username, first_name)
-                VALUES ($1, $2, $3)
-                ON CONFLICT (telegram_id) DO NOTHING
+                VALUES ($1, $2, $3) ON CONFLICT (telegram_id) DO NOTHING
                 """,
                 telegram_id, username, first_name
             )
-
 
     async def add_meal(self, data: dict):
         """Добавляем блюдо в базу данных dishes"""
@@ -39,35 +37,30 @@ class Database:
             async with self.pool.acquire() as conn:
                 await conn.execute(
                     """
-                    INSERT INTO dishes (name, ingredients, receipt, time_of_meal)
-                    VALUES ($1, $2, $3, $4)
+                    INSERT INTO breakfast (name, ingredients, receipt)
+                    VALUES ($1, $2, $3)
                     """,
                     data['name'],  # $1
                     data['ingredients'],  # $2
                     data['receipt'],  # $3
-                    data['time_of_meal']  # $4
                 )
             return True  # Успех
         except Exception as e:
             print(f"❌ Ошибка при добавлении блюда: {e}")
             return False  # Ошибка
 
-    async def get_meal(self, meal_id: int):
+    async def get_meal(self, table: str, meal_id: int):
         """Получить блюдо из базы"""
+        allowed_tables = ['breakfast', 'lunch', 'dinner']
+        if table not in allowed_tables:
+            raise ValueError(f"Таблица {table} не разрешена")
         async with self.pool.acquire() as conn:
+            print(table, meal_id)
             meal = await conn.fetchrow(
-                "SELECT * FROM dishes WHERE id = $1",
-                 meal_id
+                f"SELECT * FROM {table} WHERE id = $1",
+                meal_id
             )
             return meal
-
-    async def get_max_meal_id(self):
-        """Получить максимальное id из таблицы dishes"""
-        async with self.pool.acquire() as conn:
-            id = await conn.fetchrow(
-                "SELECT MAX(id) FROM dishes"
-            )
-            return id
 
     async def get_user(self, telegram_id: int):
         """Получить пользователя из базы"""
@@ -77,6 +70,16 @@ class Database:
                 telegram_id
             )
             return user
+
+    async def get_max_id(self, table_name: str):
+        allowed_tables = ['breakfast', 'lunch', 'dinner', 'dishes', 'users']
+        if table_name not in allowed_tables:
+            raise ValueError(f"Таблица {table_name} не разрешена")
+        else:
+            async with self.pool.acquire() as conn:
+                query = f"SELECT MAX(id) FROM {table_name}"
+                result = await conn.fetchval(query)
+                return result
 
 
 # Глобальный экземпляр
