@@ -31,15 +31,15 @@ class Database:
                 telegram_id, username, first_name
             )
 
-    async def add_meal(self, data: dict):
+    async def add_meal(self,  table:str, data: dict):
         """Добавляем блюдо в базу данных dishes"""
+        allowed_tables = ['breakfast', 'lunch', 'dinner']
+        if table not in allowed_tables:
+            raise ValueError(f"Таблица {table} не разрешена")
         try:
             async with self.pool.acquire() as conn:
                 await conn.execute(
-                    """
-                    INSERT INTO breakfast (name, ingredients, receipt)
-                    VALUES ($1, $2, $3)
-                    """,
+                    F'INSERT INTO {table} (name, ingredients, receipt) VALUES ($1, $2, $3)',
                     data['name'],  # $1
                     data['ingredients'],  # $2
                     data['receipt'],  # $3
