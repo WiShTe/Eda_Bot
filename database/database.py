@@ -40,9 +40,9 @@ class Database:
             async with self.pool.acquire() as conn:
                 await conn.execute(
                     F'INSERT INTO {table} (name, ingredients, receipt) VALUES ($1, $2, $3)',
-                    data['name'],  # $1
-                    ', '.join(data['ingredients']),  # $2
-                    data['receipt'],  # $3
+                    str(data['name']).lower(),  # $1
+                    ', '.join(data['ingredients']).lower(),  # $2
+                    str(data['receipt']).lower(),  # $3
                 )
             return True  # Успех
         except Exception as e:
