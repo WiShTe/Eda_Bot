@@ -41,7 +41,7 @@ class Database:
                 await conn.execute(
                     F'INSERT INTO {table} (name, ingredients, receipt) VALUES ($1, $2, $3)',
                     data['name'],  # $1
-                    data['ingredients'],  # $2
+                    ', '.join(data['ingredients']),  # $2
                     data['receipt'],  # $3
                 )
             return True  # Успех

@@ -7,9 +7,3 @@ class Add_meal(StatesGroup):
     reciept = State()
     time_of_meal = State()
     confirmation = State()
-
-
-class Create_menu(StatesGroup):
-    breakfast = State()
-    lunch = State()
-    dinner = State()
